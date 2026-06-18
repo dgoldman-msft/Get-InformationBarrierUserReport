@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+  <ViewDefinitions>
+
+    <!-- Default table view: 7 key IB compliance columns -->
+    <View>
+      <Name>Default</Name>
+      <ViewSelectedBy>
+        <TypeName>InformationBarrierUserReport.Record</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <AutoSize />
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>UPN</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>AccountType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>IBStatus</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Segments</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>ActivePolicies</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>BlockedSegments</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>AllowedSegments</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>UPN</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>AccountType</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>IBStatus</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Segments</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ActivePolicies</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>BlockedSegments</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>AllowedSegments</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+    <!-- Full list view (used with Format-List or -FullDetails) -->
+    <View>
+      <Name>Full</Name>
+      <ViewSelectedBy>
+        <TypeName>InformationBarrierUserReport.Record</TypeName>
+      </ViewSelectedBy>
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem><PropertyName>UPN</PropertyName></ListItem>
+              <ListItem><PropertyName>DisplayName</PropertyName></ListItem>
+              <ListItem><PropertyName>AccountType</PropertyName></ListItem>
+              <ListItem><PropertyName>IBStatus</PropertyName></ListItem>
+              <ListItem><PropertyName>Segments</PropertyName></ListItem>
+              <ListItem><PropertyName>ActivePolicies</PropertyName></ListItem>
+              <ListItem><PropertyName>BlockedSegments</PropertyName></ListItem>
+              <ListItem><PropertyName>AllowedSegments</PropertyName></ListItem>
+              <ListItem><PropertyName>BlockedUsers</PropertyName></ListItem>
+              <ListItem><PropertyName>AllowedUsers</PropertyName></ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+    </View>
+
+  </ViewDefinitions>
+</Configuration>
