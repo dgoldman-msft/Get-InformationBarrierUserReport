@@ -179,13 +179,25 @@ with tabs[0]:
                                      height=120,
                                      placeholder="jdoe@contoso.com\nguest_fabrikam.com#EXT#@contoso.onmicrosoft.com")
         elif mode == "Segment enumeration":
-            segment_name = st.text_input("Segment name", placeholder="Finance")
+            segment_name = st.text_input(
+                "Segment name",
+                placeholder="SEG_B_INTERNAL_ALLOWED",
+                help="Exact segment name or wildcard pattern (e.g. *ALLOWED*). "
+                     "Use 'List all policies' first to discover valid segment names.",
+            )
+            if segment_name.strip() and "*" not in segment_name and "?" not in segment_name:
+                st.caption(
+                    "💡 Tip: supports wildcards — try "
+                    f"\`*{segment_name.strip()}*\` to do a partial match."
+                )
 
     with col2:
         st.markdown("**Quick help**")
         st.markdown("""
 - **UPN lookup** — report IB status for specific users/guests
-- **Segment enumeration** — enumerate all users in a segment
+- **Segment enumeration** — enumerate all users in a named segment
+  Use the exact segment name or a wildcard pattern (e.g. `*Finance*`).
+  Run **List all policies** first to discover valid segment names.
 - **List all policies** — print the full IB policy matrix
         """)
 
@@ -333,21 +345,40 @@ with tabs[1]:
         st.subheader("All Records")
 
         # Filters
-        filter_col1, filter_col2 = st.columns(2)
+        filter_col1, filter_col2, filter_col3 = st.columns(3)
         with filter_col1:
             if "IBStatus" in df.columns:
                 status_opts = ["All"] + sorted(df["IBStatus"].dropna().unique().tolist())
                 sel_status = st.selectbox("Filter by IBStatus", status_opts)
+            else:
+                sel_status = "All"
         with filter_col2:
             if "AccountType" in df.columns:
                 type_opts = ["All"] + sorted(df["AccountType"].dropna().unique().tolist())
                 sel_type = st.selectbox("Filter by AccountType", type_opts)
+            else:
+                sel_type = "All"
+        with filter_col3:
+            blocked_search = st.text_input(
+                "Search blocked segments / users",
+                placeholder="e.g. SEG_A_GUESTS or user@contoso.com",
+                help="Searches the BlockedSegments and BlockedUsers columns (case-insensitive substring).",
+            )
 
         display_df = df.copy()
         if "IBStatus" in df.columns and sel_status != "All":
             display_df = display_df[display_df["IBStatus"] == sel_status]
         if "AccountType" in df.columns and sel_type != "All":
             display_df = display_df[display_df["AccountType"] == sel_type]
+        if blocked_search.strip():
+            term = blocked_search.strip().lower()
+            mask = pd.Series(False, index=display_df.index)
+            for col in ("BlockedSegments", "BlockedUsers"):
+                if col in display_df.columns:
+                    mask |= display_df[col].fillna("").str.lower().str.contains(term, regex=False)
+            display_df = display_df[mask]
+            if display_df.empty:
+                st.warning(f"No records contain **{blocked_search}** in BlockedSegments or BlockedUsers.")
 
         st.dataframe(display_df, use_container_width=True)
 
@@ -362,7 +393,27 @@ with tabs[2]:
     else:
         rc = st.session_state.get("returncode")
         st.caption(f"Exit code: {rc}")
+
+        # Surface actionable hints from log lines
+        all_lines = st.session_state.get("output_lines", []) + st.session_state.get("error_lines", [])
+        for line in all_lines:
+            m = re.search(r"No segments matched '(.+?)'\. Available segments: (.+)", line)
+            if m:
+                bad_name = m.group(1)
+                available = [s.strip() for s in m.group(2).split(",")]
+                st.error(
+                    f"**Segment not found:** `{bad_name}` did not match any segment. "
+                    f"Available segments: {', '.join(f'`{s}`' for s in available)}"
+                )
+                st.info(
+                    f"**Tip:** Use the exact name or a wildcard — e.g. `*{bad_name}*`. "
+                    "Switch to **List all policies** to browse all segment names first."
+                )
+                break
+
         if st.session_state["output_lines"]:
-            st.text_area("stdout", "\n".join(st.session_state["output_lines"]), height=400)
+            # Colour-highlight ERROR lines in the raw text
+            raw_text = "\n".join(st.session_state["output_lines"])
+            st.text_area("stdout", raw_text, height=400)
         if st.session_state["error_lines"]:
             st.text_area("stderr", "\n".join(st.session_state["error_lines"]), height=200)
